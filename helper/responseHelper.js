@@ -9,8 +9,8 @@ module.exports = {
             return {
                 "status" : 200,
                 "code": 'success',
-                "message": response.messages,
-                "data" : response.data
+                "data" : response.data,
+                "message": response.messages
             }
 
         } else {

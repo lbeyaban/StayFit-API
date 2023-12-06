@@ -38,5 +38,11 @@ router.post('/', async function(req, res, next) {
 
 });
 
+router.post('/login', async function(req, res, next) {
+
+  await userController.login(req,res,next);
+
+});
+
 
 module.exports = router;
