@@ -1,13 +1,18 @@
 let userController = {}
-const { ObjectId } = require('mongodb');
+const {
+    ObjectId
+} = require('mongodb');
 const mongoHelper = require('../helper/mongoHelper')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
+
 
 userController.getUsers = async function (req, res, next) {
 
     try {
 
-        let rs = await mongoHelper.getByCollection("StayFit", "Users");
+        let rs = await mongoHelper.getByCollection("StayFit", "users");
 
         let data = {
 
@@ -135,73 +140,101 @@ userController.deleteById = async function (req, res, next) {
 
 }
 
-userController.addUser = async function(req,res,next){
+userController.addUser = async function (req, res, next) {
 
     try {
 
-        newUser = req.body.data
-
-        if (typeof req.body.data == 'string') {
-            newUser = JSON.parse(req.body.data)
+        if(!req.body.name || !req.body.surname || !req.body.email || !req.body.password || !req.body.birthday || !req.body.gender || !req.body.weight || !req.body.lenght || !req.body.goals){
+    
+          return res.status(400).json({
+      
+            error : true,
+            message : "Boş alan veya alanlar olmamalı"
+      
+          })
+      
+        }else {
+      
+          const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      
+          const newUser = new User({
+      
+            name: req.body.name,
+            surname : req.body.surname,
+            email: req.body.email,
+            password: hashedPassword,
+            birthday : req.body.birthday,
+            gender : req.body.gender,
+            weight : req.body.weight,
+            lenght: req.body.lenght,
+            goals : req.body.goals
+      
+          });
+    
+          const user = await newUser.save();
+    
+          res.status(201).json({
+    
+            error : false,
+            message : "Kullanıcı başarıyla kaydedildi."
+    
+          })
+    
         }
-
-        let rs = await mongoHelper.insertObject(newUser, "StayFit", "Users")
-
-        let data = {
-
-            "success": true,
-            "data": rs,
-            "message": "İsteğiniz başarıyla işlendi."
-
-        }
-
-        res.send(data)
-
-    } catch (error) {
-
-        let err = {
-            "success": false,
-            "error": {
-                "message": error.message,
-            }
-        }
-
-        res.send(err)
-
-    }
+        
+      } catch (err) {
+        
+        return res.status(400).json({
+    
+          error : true,
+          message : 'Kullanıcı kaydedilemedi : ' + err.message
+    
+        })
+    
+      }
 
 }
 
-userController.login = async function(req,res,next){
+userController.login = async function (req, res, next) {
 
     try {
-        const secretKey = 'supersecretkey';
-        const { email, password } = req.body || {};
+        const secretKey = process.env.SECRET_KEY;
+        console.log("Secret key : ",secretKey);
+        const {
+            email,
+            password
+        } = req.body || {};
 
-        console.log("Email" , email);
-        console.log("Password" , password);
-        
-        var user = await mongoHelper.getDataByField("email" , email, "StayFit", "Users")
+        console.log("Email", email);
+        console.log("Password", password);
 
-        console.log("User : " , user);
+        var user = await mongoHelper.getDataByField("email", email, "StayFit", "users")
 
-        if(!user){
+        console.log("User : ", user);
 
-            res.status(404).json({ message: 'Kullanıcı Bulunamadı.' });
+        if (!user) {
 
-        }else {
+            res.status(404).json({
+                message: 'Kullanıcı Bulunamadı.'
+            });
 
-            if(user.password == password){
+        } else {
 
-                const token = jwt.sign(user, secretKey, { expiresIn: '1h' });
+            if (bcrypt.compare(password, user.password)) {
+
+                const token = jwt.sign(user, secretKey, {
+                    expiresIn: '1h'
+                });
                 res.send({
                     "success": true,
                     "token": token
                 })
 
-            }else {
+            } else {
 
-                res.status(401).json({ message: 'Hatalı şifre' });
+                res.status(401).json({
+                    message: 'Hatalı şifre'
+                });
 
             }
 
