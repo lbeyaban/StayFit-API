@@ -6,6 +6,7 @@ const mongoHelper = require('../helper/mongoHelper')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
+const User = require('../models/user')
 
 
 userController.getUsers = async function (req, res, next) {
