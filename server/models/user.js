@@ -50,8 +50,6 @@ const UserSchema = new Schema({
   mealPlan: {
     type: [{
       planid: String,
-      startdate: Date,
-      finishdate: Date
     }],
     default: []
   }

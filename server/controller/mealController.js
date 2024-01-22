@@ -136,5 +136,24 @@ mealController.addMeal = async function (req, res, next) {
 
 }
 
+mealController.addMealPlan = async function(req,res,next){
+
+    try {
+
+        
+
+    } catch (error) {
+
+        res.status(404).json({
+            error: 1,
+            message: error.message
+        })
+
+    }
+
+
+}
+
+
 
 module.exports = mealController;
