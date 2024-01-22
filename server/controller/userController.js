@@ -221,7 +221,7 @@ userController.login = async function (req, res, next) {
 
         } else {
 
-            if (bcrypt.compare(password, user.password)) {
+            if (await bcrypt.compare(password, user.password)) {
 
                 const token = jwt.sign(user, secretKey, {
                     expiresIn: '1h'
